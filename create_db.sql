@@ -23,5 +23,3 @@ GRANT ALL PRIVILEGES ON bettys_books.* TO ' bettys_books_app'@'localhost';
 
 
 # Insert data into the tables
-
-USE bettys_books;
