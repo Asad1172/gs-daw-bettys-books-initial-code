@@ -1,0 +1,16 @@
+
+<!-- views/list.ejs -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User List</title>
+</head>
+<body>
+    <h1>List of Users</h1>
+    <ul>
+        <% users.forEach(function(user) { %>
+            <li><%= user.firstname %> <%= user.lastname %> (Username: <%= user.username %>, Email: <%= user.email %>)</li>
+        <% }); %>
+    </ul>
+</body>
+</html>
