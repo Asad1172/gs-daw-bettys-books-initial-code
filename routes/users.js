@@ -1,3 +1,5 @@
+const { check, validationResult } = require('express-validator');
+
 // Create a new router
 const redirectLogin = (req, res, next) => {
     if (!req.session.userId ) {
@@ -67,55 +69,67 @@ router.post('/loggedin', function(req, res, next) {
     });
 });
 
-router.post('/registered', function (req, res, next) 
+router.post('/registered', 
+    [check('email').isEmail(),
+        check('password').isLength({ min: 5})
+    ], 
+    function (req, res, next) 
 {
-    const plainPassword = req.body.password
-    
-    let result;
-    
-    
-        
-    // saving data in database
-    bcrypt.hash(plainPassword, saltRounds, (err, hashedPassword) => {
-        // Store hashed password in your database.
-        if(err)
+    const errors = validationResult(req);
+        if (!errors.isEmpty()) 
         {
-            console.log("error here: " + err)
+            res.redirect('./register'); 
         }
-      
-      let newrecord = 
-    [   
-        req.body.firstname,
-        req.body.lastname,
-        req.body.username,
-        req.body.email,
-        hashedPassword
-    ]
+        else 
+        { 
 
-    let sqlquery = "INSERT INTO passwords (firstname, lastname, username, email, hashedpassword) VALUES (?,?,?,?,?)";
-
-    db.query(sqlquery, newrecord, (err, results) =>
-        {
-            if (err)
-            {
-                console.log("ERROR inserting into database:", err);
-                return next(err);
-            }
-            else
-            {
-                 result = 'Hello '+ req.body.first + ' '+ req.body.last +' you are now registered!  We will send an email to you at ' + req.body.email
-         result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword
-                res.send(result)
-            }
-        }
+        const plainPassword = req.body.password
         
-    )
+        let result;
+        
+        
+            
+        // saving data in database
+        bcrypt.hash(plainPassword, saltRounds, (err, hashedPassword) => {
+            // Store hashed password in your database.
+            if(err)
+            {
+                console.log("error here: " + err)
+            }
+        
+        let newrecord = 
+        [   
+            req.sanitize(req.body.firstname),
+            req.sanitize(req.body.lastname),
+            req.sanitize(req.body.username),
+            req.sanitize(req.body.email),
+            hashedPassword
+        ]
 
-})
+        let sqlquery = "INSERT INTO passwords (firstname, lastname, username, email, hashedpassword) VALUES (?,?,?,?,?)";
 
-});
+        db.query(sqlquery, newrecord, (err, results) =>
+            {
+                if (err)
+                {
+                    console.log("ERROR inserting into database:", err);
+                    return next(err);
+                }
+                else
+                {
+                    result = 'Hello '+ req.sanitize(req.body.firstname) + ' '+ req.sanitize(req.body.lastname) +' you are now registered!  We will send an email to you at ' + req.body.email
+            result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword
+                    res.send(result)
+                }
+            }
+            
+        )
+
+    })
+
+    }});
 
 
 
-// Export the router object so index.js can access it
-module.exports = router;
+    // Export the router object so index.js can access it
+    module.exports = router;
